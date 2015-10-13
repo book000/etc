@@ -1,0 +1,91 @@
+<!DOCTYPE html> 
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<title>走行履歴表示</title>
+</head>
+<body>
+<div id="map" style="width: 740px; height: 400px;"></div>
+<script type="text/javascript">
+var data = new Array();
+
+  function attachMessage(marker, msg) {
+    google.maps.event.addListener(marker, 'click', function(event) {
+      new google.maps.InfoWindow({
+        content: msg
+      }).open(marker.getMap(), marker);
+    });
+  }
+  
+//成功した時の関数
+function successFunc(position){
+//緯度をアラート表示
+var lat = position.coords.latitude;
+//経度をアラート表示
+var long = position.coords.longitude;
+
+  var myMap = new google.maps.Map(document.getElementById('map'), {
+    zoom: 14,
+    center: new google.maps.LatLng(lat, long),
+    scrollwheel: false,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  });
+  
+data.push({position: new google.maps.LatLng(lat, long), content: lat + ", " + long});
+ for (i = 0; i < data.length; i++) {
+
+var myMarker = new google.maps.Marker({
+
+      position: data[i].position,
+      map: myMap
+    });
+    attachMessage(myMarker, data[i].content);
+    
+      var table = document.getElementById("status_table");
+
+      var newtr = table.insertRow( table.rows.length );
+
+      var newtd = newtr.insertCell( newtr.cells.length );
+      newtd.appendChild( document.createTextNode(lat) );
+      
+      var newtd = newtr.insertCell( newtr.cells.length );
+      newtd.appendChild( document.createTextNode(long) );
+}
+}
+//失敗した時の関数
+function errorFunc(error){
+//エラーコードのメッセージを定義
+var errorMessage = {
+0: "原因不明のエラーが発生しました…。",
+1: "位置情報の取得が許可されませんでした…。",
+2: "電波状況などで位置情報が取得できませんでした…。",
+3: "位置情報の取得に時間がかかり過ぎてタイムアウトしました…。",
+};
+document.getElementById("status").innerHTML=errorMessage;
+}
+
+//オプション・オブジェクト
+var optionObj = {
+"enableHighAccuracy": false,
+"timeout": 8000,
+"maximumAge": 5000,
+};
+
+//現在位置を取得する
+navigator.geolocation.watchPosition(successFunc,errorFunc,optionObj);
+
+
+</script>
+<div id="status"></div>
+<table id="status_table" border="1">
+      <tr>
+        <td>lat</td>
+        <td>long</td>
+      </tr>
+      
+    </table>
+
+
+</body>
+</html>
