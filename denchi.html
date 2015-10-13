@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1.0">
+<title>バッテリー情報</title>
+
+<h1>バッテリー情報</h1>
+<ul>
+	<li>バッテリー残量：<span id="level"></span>%
+	<li>状態:<span id="charging"></span>
+</ul>
+
+<script>
+function update(){
+myTbl = new Array("日","月","火","水","木","金","土");
+myD = new Date();
+
+year = myD.getFullYear();
+month = myD.getMonth() + 1;
+date = myD.getDate();
+day = myD.getDay();
+hours = myD.getHours();
+minutes = myD.getMinutes();
+seconds = myD.getSeconds();
+
+var update = false;
+navigator.getBattery().then(function(battery) {
+	if(battery.charging){
+	var nowbattery = "充電中(true)";
+	}else{
+	var nowbattery = "放電中(false)";
+	}
+	var oldlevel = document.getElementById('level').innerHTML;
+	if(Number(Math.round(battery.level*100)) != Number(oldlevel)){
+	document.getElementById('level').innerHTML = Math.round(battery.level*100);
+	update = true;
+	}
+	
+	var oldbattery = document.getElementById('charging').innerHTML;
+	if(nowbattery != oldbattery){
+    document.getElementById('charging').innerHTML = nowbattery;
+    update = true;
+    }
+    
+    if(update){
+    var table = document.getElementById("status_table");
+
+      var newtr = table.insertRow( table.rows.length );
+      
+      var newtd = newtr.insertCell( newtr.cells.length );
+      newtd.appendChild( document.createTextNode(year + "/" + ("0"+month).slice(-2) + "/" + ("0"+date).slice(-2) + " (" + myTbl[day] + ") " + ("0"+hours).slice(-2) + ":" + ("0"+minutes).slice(-2) + ":" + ("0"+seconds).slice(-2)));
+      
+      var newtd = newtr.insertCell( newtr.cells.length );
+      newtd.appendChild( document.createTextNode(Math.round(battery.level*100)) );
+      
+      var newtd = newtr.insertCell( newtr.cells.length );
+      newtd.appendChild( document.createTextNode(nowbattery) );
+    }
+    
+});
+}
+
+setInterval("update();", 1000);
+</script>
+<table id="status_table" border="1">
+      <tr>
+        <td>時間</td>
+        <td>残量</td>
+        <td>状態</td>
+      </tr>
+      
+    </table>
