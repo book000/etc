@@ -1,4 +1,10 @@
 <?php
+/* コマンドブロックひとつで複数のコマンドを連続して実行するコマンドを生成するプログラム
+   list変数に「$」区切りで実行したいコマンドを入力してください。
+   よくわからないけどおすすめは50コマンド以内。100とかするとなんか止まってしまう。
+   ソースコードの汚さはいつも通り。
+   作者:mine_book000
+*/
 header("Content-Type: text/html; charset=UTF-8");
 $list = "/say 0$/say 1$/say 2$/say 3$/say 4$/say 5$/say 6$/say 7$/say 8";
 $commands = explode("$", $list);
