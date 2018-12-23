@@ -126,7 +126,7 @@ foreach ($backupList as $key => $one) {
         mkdir(__DIR__ . "/appbackup/" . $model . "/" . $DATA);
     }
 
-    $file = __DIR__ . "/appbackup/" . $model . "/" . $DATA . "/" . $nameORId . ".adb";
+    $file = __DIR__ . "/appbackup/" . $model . "/" . $DATA . "/" . $nameORId . ".ab";
 
     if (file_exists($file)) {
         echo "App backup File is found!\n";
