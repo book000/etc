@@ -33,6 +33,16 @@ $model = shell_exec("adb shell getprop ro.product.model");
 $model = trim($model);
 echo "Model: " . $model . "\n";
 
+$size = exec("adb shell wm size");
+preg_match("/Physical size: ([0-9]+)x([0-9]+)/", $size, $m);
+$win_x = $m[1];
+$win_y = $m[2];
+
+$x = $win_x - 300;
+$y = $win_y - 100;
+
+echo "Window Size: " . $win_x . " x " . $win_y . "\n";
+
 // プレイストアアクセス時のエラー抑制
 $context = stream_context_create(array(
     "http" => array("ignore_errors" => true)
@@ -84,6 +94,7 @@ foreach ($adblists as $key => $adb) {
         "path" => $apkFile,
         "version" => $versionName
     ];
+    //break;
 
     if (!file_exists(__DIR__ . "/apk/" . $nameORId)) {
         mkdir(__DIR__ . "/apk/" . $nameORId);
@@ -135,6 +146,10 @@ foreach ($backupList as $key => $one) {
 
     // アプリバックアップ
     // 端末でバックアップの確認がされるので端末操作必要
+
+    $fp = popen('start "" php ' . __DIR__ . '/touch.php ' . $x . ' ' . $y, 'r');
+    pclose($fp);
+
     echo exec("adb backup -f \"" . $file . "\" -apk -obb " . $id) . "\n";
 }
 
