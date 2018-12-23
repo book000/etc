@@ -45,7 +45,7 @@ $adblists = explode("\n", $adblist); // 改行で分割
 
 $backupList = array();
 
-foreach ($adblists as $adb) {
+foreach ($adblists as $key => $adb) {
     $pos = mb_strrpos($adb, "="); // 行の最後に出てくる=を探す
     if ($pos === false) {
         continue; // =がなかったら次へ
@@ -75,7 +75,7 @@ foreach ($adblists as $adb) {
     preg_match("/versionName=(.+)/", $packageData, $m);
     $versionName = $m[1];
 
-    echo $name . " " . $id . " " . $versionName . "\n";
+    echo "[" . ($key + 1) . "/" . count($adblists) . "] " . $name . " " . $id . " " . $versionName . "\n";
     //echo __DIR__ . "/apk/" . $id . "_" . $versionName . ".apk";
 
     $backupList[] = [
