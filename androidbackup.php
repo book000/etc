@@ -104,7 +104,7 @@ echo count($backupList) . " apps backupped!\n";
 
 $DATA = date("Ymd");
 
-foreach ($backupList as $one) {
+foreach ($backupList as $key => $one) {
     $name = $one["name"];
     $id = $one["id"];
     $path = $one["path"];
@@ -116,7 +116,7 @@ foreach ($backupList as $one) {
         $nameORId = $id;
     }
 
-    echo $name . " " . $id . " " . $versionName . "\n";
+    echo "[" . ($key + 1) . "/" . count($backupList) . "] " . $name . " " . $id . " " . $versionName . "\n";
 
     if (!file_exists(__DIR__ . "/appbackup/" . $model)) {
         mkdir(__DIR__ . "/appbackup/" . $model);
@@ -127,6 +127,11 @@ foreach ($backupList as $one) {
     }
 
     $file = __DIR__ . "/appbackup/" . $model . "/" . $DATA . "/" . $nameORId . ".adb";
+
+    if (file_exists($file)) {
+        echo "App backup File is found!\n";
+        continue;
+    }
 
     // アプリバックアップ
     // 端末でバックアップの確認がされるので端末操作必要
