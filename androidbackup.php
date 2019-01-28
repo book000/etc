@@ -18,19 +18,25 @@ function replaceFilenameillegalChar($str)
     return str_replace(["\\", "/", "", "*", "?", "\"", "<", ">", "|", ":"], "_", $str);
 }
 
-if (!file_exists(__DIR__ . "/apk/")) {
-    mkdir(__DIR__ . "/apk/");
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR);
 }
-if (!file_exists(__DIR__ . "/appbackup/")) {
-    mkdir(__DIR__ . "/appbackup/");
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR);
 }
-if (!file_exists(__DIR__ . "/data/")) {
-    mkdir(__DIR__ . "/data/");
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR);
 }
 
 // モデル名取得
 $model = shell_exec("adb shell getprop ro.product.model");
 $model = trim($model);
+
+if ($model == "") {
+    echo "Model Name is not found!\n";
+    exit;
+}
+
 echo "Model: " . $model . "\n";
 
 $size = exec("adb shell wm size");
@@ -47,6 +53,9 @@ echo "Window Size: " . $win_x . " x " . $win_y . "\n";
 $context = stream_context_create(array(
     "http" => array("ignore_errors" => true)
 ));
+
+// APKファイルコピー先
+exec("adb shell mkdir /storage/emulated/0/APK");
 
 // 端末にインストールされているアプリのリストを取得
 $adblist = shell_exec("adb shell pm list packages -f");
@@ -96,20 +105,28 @@ foreach ($adblists as $key => $adb) {
     ];
     //break;
 
-    if (!file_exists(__DIR__ . "/apk/" . $nameORId)) {
-        mkdir(__DIR__ . "/apk/" . $nameORId);
+    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId)) {
+        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId);
     }
 
     $versionName = replaceFilenameillegalChar($versionName);
 
-    if (file_exists(__DIR__ . "/apk/" . $nameORId . "/" . $versionName . ".apk")) {
+    if (file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId . DIRECTORY_SEPARATOR . $versionName . ".apk")) {
         echo "APK File is found!\n";
         continue;
     }
 
     // APKファイルダウンロード
-    $output = exec("adb pull -p \"" . $apkFile . "\" -p \"" . __DIR__ . "/apk/" . $nameORId . "/" . $versionName . ".apk\"");
+    system("adb shell cp \"" . $apkFile . "\" /storage/emulated/0/APK"); // APKファイルをパーミッションのあるところに一応コピーしてしまう。たまにそのままpullでないアプリがある
+    $filename = substr($apkFile, strrpos($apkFile, "/") + 1);
+    $output = exec("adb pull -p \"/storage/emulated/0/APK/" . $filename . "\" -p \"" . __DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId . DIRECTORY_SEPARATOR . $versionName . ".apk\"");
     echo $output . "\n";
+
+    if (($key + 1) % 20 == 0) {
+        // 20アプリずつ画面をタッチして起動させておく
+        $fp = popen('start /b "" php ' . __DIR__ . '/touch.php 0 0', 'r');
+        pclose($fp);
+    }
 }
 echo count($backupList) . " apps backupped!\n";
 
@@ -129,15 +146,15 @@ foreach ($backupList as $key => $one) {
 
     echo "[" . ($key + 1) . "/" . count($backupList) . "] " . $name . " " . $id . " " . $versionName . "\n";
 
-    if (!file_exists(__DIR__ . "/appbackup/" . $model)) {
-        mkdir(__DIR__ . "/appbackup/" . $model);
+    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model)) {
+        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model);
     }
 
-    if (!file_exists(__DIR__ . "/appbackup/" . $model . "/" . $DATA)) {
-        mkdir(__DIR__ . "/appbackup/" . $model . "/" . $DATA);
+    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA)) {
+        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA);
     }
 
-    $file = __DIR__ . "/appbackup/" . $model . "/" . $DATA . "/" . $nameORId . ".ab";
+    $file = __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . DIRECTORY_SEPARATOR . $nameORId . ".ab";
 
     if (file_exists($file)) {
         echo "App backup File is found!\n";
@@ -147,23 +164,23 @@ foreach ($backupList as $key => $one) {
     // アプリバックアップ
     // 端末でバックアップの確認がされるので端末操作必要
 
-    $fp = popen('start "" php ' . __DIR__ . '/touch.php ' . $x . ' ' . $y, 'r');
+    $fp = popen('start /b "" php ' . __DIR__ . '/touch.php ' . $x . ' ' . $y, 'r');
     pclose($fp);
 
     echo exec("adb backup -f \"" . $file . "\" -apk -obb " . $id) . "\n";
 }
 
-if (!file_exists(__DIR__ . "/data/" . $model)) {
-    mkdir(__DIR__ . "/data/" . $model);
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model);
 }
 
-if (!file_exists(__DIR__ . "/data/" . $model . "/" . $DATA)) {
-    mkdir(__DIR__ . "/data/" . $model . "/" . $DATA);
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA);
 }
 
 // 本体のデータ(実はsdcardではない)をダウンロード
 echo "start sdcard backup...\n";
 
-system("adb pull /sdcard/ \"" . __DIR__ . "/data/" . $model . "/" . $DATA . "\"");
+system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . "\"");
 
 echo "end sdcard backup...\n";
