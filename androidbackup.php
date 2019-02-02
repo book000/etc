@@ -207,8 +207,19 @@ if(count($sddrives) == 0){
     exit;
 }
 
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model);
+}
+
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}
+
 foreach($sddrives as $sddrive){
     $sdName = substr($sddrive, strrpos($sddrive, "/") + 1);
+    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . DIRECTORY_SEPARATOR . $sdName)) {
+        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . DIRECTORY_SEPARATOR . $sdName);
+    }
     system("adb pull " . $sddrive . " \"" . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . DIRECTORY_SEPARATOR . $sdName . "\"");
 }
 
