@@ -132,7 +132,7 @@ foreach ($adblists as $key => $adb) {
 }
 echo count($backupList) . " apps backupped!\n";
 
-$DATA = date("Ymd");
+$DATE = date("Ymd");
 
 foreach ($backupList as $key => $one) {
     $name = $one["name"];
@@ -152,11 +152,11 @@ foreach ($backupList as $key => $one) {
         mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model);
     }
 
-    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA)) {
-        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA);
+    if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)) {
+        mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
     }
 
-    $file = __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . DIRECTORY_SEPARATOR . $nameORId . ".ab";
+    $file = __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . DIRECTORY_SEPARATOR . $nameORId . ".ab";
 
     if (file_exists($file)) {
         echo "App backup File is found!\n";
@@ -176,28 +176,40 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . 
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model);
 }
 
-if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA)) {
-    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA);
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }
 
 // 本体のデータをダウンロード
 echo "start data backup...\n";
 
-system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . "\"");
+system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . "\"");
 
 echo "end data backup.\n";
 
 // SDカードがある場合それをバックアップ
 echo "start SDCard data backup...\n";
 
-$output = exec("adb shell printenv EXTERNAL_SD_STORAGE");
-$output = trim($output);
+exec("adb shell cat /proc/mounts", $output);
+$sddrives = [];
+foreach($output as $one){
+    $one = explode(" ", $one);
+    if(substr($one[1], 0, strlen("/storage/")) == "/storage/"){
+        if($one[1] == "/storage/emulated"){
+            continue;
+        }
+        $sddrives[] = $one[1];
+    }
+}
 
-if($output == ""){
+if(count($sddrives) == 0){
     echo "SDCard is not found.\n";
     exit;
 }
 
-system("adb pull " . $output . " \"" . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . "\"");
+foreach($sddrives as $sddrive){
+    $sdName = substr($sddrive, strrpos($sddrive, "/") + 1);
+    system("adb pull " . $sddrive . " \"" . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . DIRECTORY_SEPARATOR . $sdName . "\"");
+}
 
 echo "end SDCard data backup.\n";
