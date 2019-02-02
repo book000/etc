@@ -54,7 +54,6 @@ $context = stream_context_create(array(
     "http" => array("ignore_errors" => true)
 ));
 
-// APKファイルコピー先
 exec("adb shell mkdir /storage/emulated/0/APK");
 
 // 端末にインストールされているアプリのリストを取得
@@ -117,7 +116,7 @@ foreach ($adblists as $key => $adb) {
     }
 
     // APKファイルダウンロード
-    system("adb shell cp \"" . $apkFile . "\" /storage/emulated/0/APK"); // APKファイルをパーミッションのあるところに一応コピーしてしまう。たまにそのままpullでないアプリがある
+    system("adb shell cp \"" . $apkFile . "\" /storage/emulated/0/APK");
     $filename = substr($apkFile, strrpos($apkFile, "/") + 1);
     $output = exec("adb pull -p \"/storage/emulated/0/APK/" . $filename . "\" -p \"" . __DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId . DIRECTORY_SEPARATOR . $versionName . ".apk\"");
     echo $output . "\n";
@@ -178,9 +177,24 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . 
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA);
 }
 
-// 本体のデータ(実はsdcardではない)をダウンロード
-echo "start sdcard backup...\n";
+// 本体のデータをダウンロード
+echo "start data backup...\n";
 
 system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . "\"");
 
-echo "end sdcard backup...\n";
+echo "end data backup.\n";
+
+// SDカードがある場合それをバックアップ
+echo "start SDCard data backup...\n";
+
+$output = exec("adb shell printenv EXTERNAL_SD_STORAGE");
+$output = trim($output);
+
+if($output == ""){
+    echo "SDCard is not found.\n";
+    exit;
+}
+
+system("adb pull " . $output . " \"" . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATA . "\"");
+
+echo "end SDCard data backup.\n";
