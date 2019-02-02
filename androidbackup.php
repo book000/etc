@@ -1,7 +1,7 @@
 <?php
 /*
   Android バックアッププログラム
-  APKファイル(apkディレクトリ)、アプリケーションデータ(appbackupディレクトリ)、本体のデータ(dataディレクトリ)をダウンロードできる
+  APKファイル(apkディレクトリ)、アプリケーションデータ(appbackupディレクトリ)、本体のデータ(dataディレクトリ)、SDカードデータ(sdcarddataディレクトリ内)をダウンロードできる
 
   実行前に端末のUSBデバッグをオンにしてください。
   端末接続されていなくても特にチェックせず動作するため、事前にadb devicesコマンドでチェックしてから！
@@ -26,6 +26,9 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARAT
 }
 if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR)) {
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR);
+}
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR);
 }
 
 // モデル名取得
