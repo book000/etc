@@ -1,3 +1,4 @@
+<?php
 class niconico {
     private $user_session;
     function __construct($mail, $password){
