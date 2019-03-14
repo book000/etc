@@ -1,5 +1,4 @@
 <?php
-
 class SteamGame {
     private $appid = null;
     private $gameData = null;
@@ -26,19 +25,35 @@ class SteamGame {
             $this->gameData = null;
         }
     }
-    function getFinalPrice(){
+    // ゲーム名
+    function getName(){
         if($this->gameData == null){
             throw new Exception("Failed to get SteamGameData.");
         }
-        return $this->gameData["data"]["price_overview"]["final"];
+        return $this->gameData["data"]["name"];
     }
+    // 定価
+    function getInitialPrice(){
+        if($this->gameData == null){
+            throw new Exception("Failed to get SteamGameData.");
+        }
+        return $this->gameData["data"]["price_overview"]["initial"] / 100;
+    }
+    // 現在価格
     function getCurrencyPrice(){
         if($this->gameData == null){
             throw new Exception("Failed to get SteamGameData.");
         }
-        return $this->gameData["data"]["price_overview"]["final"];
+        return $this->gameData["data"]["price_overview"]["final"] / 100;
     }
-    
+    // JPY 価格単位
+    function getCurrencyName(){
+        if($this->gameData == null){
+            throw new Exception("Failed to get SteamGameData.");
+        }
+        return $this->gameData["data"]["price_overview"]["currency"];
+    }
+    // 割引
     function getDiscountPercent(){
         if($this->gameData == null){
             throw new Exception("Failed to get SteamGameData.");
@@ -47,5 +62,3 @@ class SteamGame {
     }
 }
 
-$gameData = new SteamGame("578080");
-echo $gameData->getDiscountPercent() . "%";
