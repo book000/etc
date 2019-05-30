@@ -90,6 +90,10 @@ public static boolean DiscordSend(String channel, String message, DiscordEmbed e
 
 2019/03/14初コミット。Nginxのアクセスログをパースしてそれぞれ変数に入れるもの。正規表現使って引っこ抜いているだけとも言える。
 
+## google_form_auto_answer.php
+
+2019/03/24初コミット。Googleフォームの自動回答プログラム。
+
 ## timetable_to_json.php, timetable.json, current_train_searcher.php
 
 2019/05/15初コミット。電車の時刻表関連。`timetable_to_json.php`はYahoo!の路線情報をパースして`timetable.json`に出力。既に`timetable.json`に「JR中央線快速 高尾・青梅方面」の時刻表を出力済み。  
