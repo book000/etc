@@ -25,6 +25,34 @@ function replaceFilenameillegalChar($str)
     return str_replace(["\\", "/", "", "*", "?", "\"", "<", ">", "|", ":"], "_", $str);
 }
 
+/**
+ * 指定したディレクトリを削除する
+ *
+ * @param string $dir
+ * @return boolean
+ */
+function rmrf(string $dir)
+{
+    if (!is_dir($dir))
+    {
+        return false;
+    }
+    if ($dh = opendir($dir)) {
+        while (($file = readdir($dh)) !== false) {
+            if($file == "." || $file == ".."){
+                continue;
+            }
+            if(is_file($dir . DIRECTORY_SEPARATOR . $file)){
+                unlink($dir . DIRECTORY_SEPARATOR . $file);
+            }else if(is_dir($dir . DIRECTORY_SEPARATOR . $file)){
+                rmrf($dir . DIRECTORY_SEPARATOR . $file);
+            }
+        }
+        closedir($dh);
+    }
+    return rmdir($dir);
+}
+
 if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR)) {
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR);
 }
@@ -110,15 +138,17 @@ foreach ($adblists as $key => $adb) {
     if ($status_code == 200) { // ステータスコードが200だったら
         pp("[" . ($key + 1) . "/" . count($adblists) . "] GooglePlay StatusCode: 200");
         preg_match("/<h1.* itemprop=\"name\"><span >(.+)<\/span><\/h1>/", $html, $m);
-        $name = html_entity_decode($m[1]); // アプリ名取得
-        $nameORId = replaceFilenameillegalChar(
-            html_entity_decode(
-                $m[1]
-            )
-        );
-        if (replaceFilenameillegalChar($m[1]) != $nameORId && file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]))) {
-            rename(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]), __DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId);
-            pp("[" . ($key + 1) . "/" . count($adblists) . "] " . "RENAME FROM " . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]) . " TO " . "apk" . DIRECTORY_SEPARATOR . $nameORId . "!");
+        if(isset($m[1])){
+            $name = html_entity_decode($m[1]); // アプリ名取得
+            $nameORId = replaceFilenameillegalChar(
+                html_entity_decode(
+                    $m[1]
+                )
+            );
+            if (replaceFilenameillegalChar($m[1]) != $nameORId && file_exists(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]))) {
+                rename(__DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]), __DIR__ . DIRECTORY_SEPARATOR . "apk" . DIRECTORY_SEPARATOR . $nameORId);
+                pp("[" . ($key + 1) . "/" . count($adblists) . "] " . "RENAME FROM " . "apk" . DIRECTORY_SEPARATOR . replaceFilenameillegalChar($m[1]) . " TO " . "apk" . DIRECTORY_SEPARATOR . $nameORId . "!");
+            }
         }
     }
     if(!isset($name) && $aapt_enable) {
@@ -264,7 +294,13 @@ foreach ($backupList as $key => $one) {
     pp(exec("adb backup -f \"" . $file . "\" -apk -obb " . $id));
 }
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
-    system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+    system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE, $ret);
+}
+if($ret == 0){
+    echo "ReturnCode: " . $ret . ". Delete dir.";
+    rmrf(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}else{
+    echo "ReturnCode: " . $ret . ".";
 }
 
 if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model)) {
@@ -281,7 +317,13 @@ pp("start data backup...");
 system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . "\"");
 
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
-    system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+    system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE, $ret);
+}
+if($ret == 0){
+    echo "ReturnCode: " . $ret . ". Delete dir.";
+    rmrf(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}else{
+    echo "ReturnCode: " . $ret . ".";
 }
 
 pp("end data backup.");
@@ -321,6 +363,12 @@ foreach($sddrives as $sddrive){
 
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
     system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}
+if($ret == 0){
+    echo "ReturnCode: " . $ret . ". Delete dir.";
+    rmrf(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}else{
+    echo "ReturnCode: " . $ret . ".";
 }
 
 pp("end SDCard data backup.");
