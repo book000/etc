@@ -68,13 +68,16 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARA
 if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "tmp" . DIRECTORY_SEPARATOR)) {
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "tmp" . DIRECTORY_SEPARATOR);
 }
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR);
+}
 
 // モデル名取得
 $model = shell_exec("adb shell getprop ro.product.model");
 $model = trim($model);
 
 if ($model == "") {
-    echo "Model Name is not found!\n";
+    pp("Model Name is not found!");
     exit;
 }
 
@@ -291,16 +294,33 @@ foreach ($backupList as $key => $one) {
     $fp = popen('start /b "" php ' . __DIR__ . '/touch.php', 'r');
     pclose($fp);
 
+    exec("adb shell input keyevent 3");
+
     pp(exec("adb backup -f \"" . $file . "\" -apk -obb " . $id));
 }
+
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model)) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model);
+}
+
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
     system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE, $ret);
 }
 if($ret == 0){
-    echo "ReturnCode: " . $ret . ". Delete dir.";
+    pp("ReturnCode: " . $ret . ". Delete dir.");
     rmrf(__DIR__ . DIRECTORY_SEPARATOR . "appbackup" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }else{
-    echo "ReturnCode: " . $ret . ".";
+    pp("ReturnCode: " . $ret . ".");
+}
+
+if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
+    system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE, $ret);
+}
+if($ret == 0){
+    pp("ReturnCode: " . $ret . ". Delete dir.");
+    rmrf(__DIR__ . DIRECTORY_SEPARATOR . "appdata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+}else{
+    pp("ReturnCode: " . $ret . ".");
 }
 
 if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model)) {
@@ -314,16 +334,35 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . 
 // 本体のデータをダウンロード
 pp("start data backup...");
 
-system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . "\"");
+$nowcd = getcwd();
+chdir(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+
+$files = shell_exec("adb shell find /sdcard/ -type file");
+$files = explode("\n", $files);
+$homedir = getcwd();
+foreach ($files as $file) {
+    $file = trim($file);
+    $dirname = dirname(substr($file, strlen("/sdcard/")));
+    if(!file_exists($dirname)){
+        mkdir($dirname, 0777, true);
+    }
+    chdir($dirname);
+    system("adb pull \"" . $file . "\"");
+    chdir($homedir);
+}
+
+chdir($nowcd);
+
+// system("adb pull /sdcard/ \"" . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . "\"");
 
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
     system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE, $ret);
 }
 if($ret == 0){
-    echo "ReturnCode: " . $ret . ". Delete dir.";
+    pp("ReturnCode: " . $ret . ". Delete dir.");
     rmrf(__DIR__ . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }else{
-    echo "ReturnCode: " . $ret . ".";
+    pp("ReturnCode: " . $ret . ".");
 }
 
 pp("end data backup.");
@@ -356,19 +395,36 @@ if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARA
     mkdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }
 
+$nowcd = getcwd();
+chdir(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
+
 foreach($sddrives as $sddrive){
     $sdName = substr($sddrive, strrpos($sddrive, "/") + 1);
-    system("adb pull " . $sddrive . " \"" . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . "\"");
+    $files = shell_exec("adb shell find " . $sddrive . "/ -type file");
+    $files = explode("\n", $files);
+    $homedir = getcwd();
+    foreach ($files as $file) {
+        $file = trim($file);
+        $dirname = dirname(substr($file, strlen($sddrive . "/")));
+        if(!file_exists($dirname)){
+            mkdir($dirname, 0777, true);
+        }
+        chdir($dirname);
+        system("adb pull \"" . $file . "\"");
+        chdir($homedir);
+    }
 }
+
+chdir($nowcd);
 
 if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE)){
     system("7z a " . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE . ".7z " . __DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }
 if($ret == 0){
-    echo "ReturnCode: " . $ret . ". Delete dir.";
+    pp("ReturnCode: " . $ret . ". Delete dir.");
     rmrf(__DIR__ . DIRECTORY_SEPARATOR . "sdcarddata" . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $DATE);
 }else{
-    echo "ReturnCode: " . $ret . ".";
+    pp("ReturnCode: " . $ret . ".");
 }
 
 pp("end SDCard data backup.");
