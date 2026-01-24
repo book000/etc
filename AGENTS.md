@@ -25,3 +25,8 @@
 - ログに機密情報を出力しない。
 
 ## リポジトリ固有
+- **type**: Utility/Snippet Repository
+- **purpose**: Storage for miscellaneous code and programs
+- **published_on**: GitHub Pages (https://book000.github.io/etc/)
+- **file_categories**: {'Discord utilities': ['DiscordEmbed.class.php', 'DiscordProgressReporter.class.php', 'DiscordEmbed.java'], 'Web utilities': ['gps.html', 'denchi.html'], 'Minecraft utilities': ['ParseSelector.java', 'Material_To_GiveName.php', 'Materials_1.12.2.txt'], 'Data utilities': ['access_log_parse.php', 'androidbackup.php', 'google_form_auto_answer.php'], 'Railway utilities': ['timetable_to_json.php', 'timetable.json', 'current_train_searcher.php'], 'Game utilities': ['SteamGame.class.php'], 'Other': ['function.php', 'niconico.class.php', 'MCBansLookup.class.php']}
+- **note**: Historical code dump - Some files contain legacy code with security issues (plaintext passwords in old commits). Mostly educational/archival value.

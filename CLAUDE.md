@@ -13,7 +13,11 @@
 - 前提・仮定・不確実性を明示し、仮定を事実のように扱わない。
 
 ## プロジェクト概要
-- 目的: えとせとら。色んなプログラムやらなんやらを投げ込み、後で何かあったときに拾い上げる用。作ったものを適当に公開しておく場。 [GitHub Pages](https://book000.github.io/etc/)をオンにしている。なぜだ？
+Collection of miscellaneous code snippets and utilities. Dumping ground for various programs and scripts in multiple languages.
+
+### 技術スタック
+- **言語**: PHP, Java, HTML, JavaScript
+- **フレームワーク**: V, a, r, i, o, u, s, /, N, o, n, e
 
 ## 重要ルール
 - 会話言語: 日本語
@@ -42,25 +46,36 @@
 - TypeScript 使用時は `skipLibCheck` で回避しない。
 - 関数やインターフェースには docstring（JSDoc など）を記載する。
 
+### コーディング規約
+
 ## 相談ルール
 - Codex CLI: 実装レビュー、局所設計、整合性確認に使う。
 - Gemini CLI: 外部仕様や最新情報の確認に使う。
 - 他エージェントの指摘は黙殺せず、採用または理由を明記して不採用とする。
 
-## 開発コマンド
+### 開発コマンド
 ```bash
-# README を確認してください
 ```
 
-## アーキテクチャと主要ファイル
+### プロジェクト構造
+
+**重要ファイル:**
+- `README.md - Complete file descriptions`
+- `PHP files (*.php) - Various PHP utilities`
+- `Java files (*.java) - Java utilities`
+- `HTML files (*.html) - Web utilities`
+- `Text files (*.txt) - Data files`
 
 ## 実装パターン
+- 既存のコードパターンに従う。
+- プロジェクト固有の実装ガイドラインがある場合はそれに従う。
 
 ## テスト
 - 方針: 変更内容に応じてテストを追加する。
 
 ## ドキュメント更新ルール
 - 更新タイミング: 実装確定後、同一コミットまたは追加コミットで更新する。
+- README、API ドキュメント、コメント等は常に最新状態を保つ。
 
 ## 作業チェックリスト
 
@@ -91,3 +106,8 @@
 6. PR 本文の崩れがないことを確認する。
 
 ## リポジトリ固有
+- **type**: Utility/Snippet Repository
+- **purpose**: Storage for miscellaneous code and programs
+- **published_on**: GitHub Pages (https://book000.github.io/etc/)
+- **file_categories**: {'Discord utilities': ['DiscordEmbed.class.php', 'DiscordProgressReporter.class.php', 'DiscordEmbed.java'], 'Web utilities': ['gps.html', 'denchi.html'], 'Minecraft utilities': ['ParseSelector.java', 'Material_To_GiveName.php', 'Materials_1.12.2.txt'], 'Data utilities': ['access_log_parse.php', 'androidbackup.php', 'google_form_auto_answer.php'], 'Railway utilities': ['timetable_to_json.php', 'timetable.json', 'current_train_searcher.php'], 'Game utilities': ['SteamGame.class.php'], 'Other': ['function.php', 'niconico.class.php', 'MCBansLookup.class.php']}
+- **note**: Historical code dump - Some files contain legacy code with security issues (plaintext passwords in old commits). Mostly educational/archival value.
